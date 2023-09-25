@@ -143,7 +143,6 @@ image *carimbo(image *im1, image *im2, int y, int x)
 
 image *carimbo2(image *im1, image *im2, int y, int x, int c)
 {
-
 	int digit = 0;
 	int i, j, col, flag, currcol, gap;
 	col = 0;
@@ -170,11 +169,9 @@ image *carimbo2(image *im1, image *im2, int y, int x, int c)
 			currcol = j;
 			for (i = 0; i < im2->altura; i++)
 			{
+				if (im2->red[i][j] == 0 && im2->green[i][j] == 0 && im2->blue[i][j] == 0)
 				{
-					if (im2->red[i][j] == 0 && im2->green[i][j] == 0 && im2->blue[i][j] == 0)
-					{
-						flag = 1;
-					}
+					flag = 1;
 				}
 			}
 		}
@@ -199,107 +196,111 @@ image *carimbo2(image *im1, image *im2, int y, int x, int c)
 		flag = 0;
 		for (i = 0; i < im2->altura; i++)
 		{
+			if (im2->red[i][j] == 0 && im2->green[i][j] == 0 && im2->blue[i][j] == 0)
 			{
-				if (im2->red[i][j] == 0 && im2->green[i][j] == 0 && im2->blue[i][j] == 0)
-				{
-					flag = 1;
-					im1->red[(x + i) % (im1->altura)][(y + j) % (im1->largura)] = 255; //im2->red[i][j];
-					im1->green[(x + i) % (im1->altura)][(y + j) % (im1->largura)] = 255; //im2->green[i][j];
-					im1->blue[(x + i) % (im1->altura)][(y + j) % (im1->largura)] = 255; //im2->blue[i][j];
-				}
+				flag = 1;
+				im1->red[(x + i) % (im1->altura)][(y + j - col) % (im1->largura)] = 255;
+				im1->green[(x + i) % (im1->altura)][(y + j - col) % (im1->largura)] = 255;
+				im1->blue[(x + i) % (im1->altura)][(y + j - col) % (im1->largura)] = 255;
 			}
 		}
-	}  
+	}
 
 	return im1;
 }
 
-image *carimbarFrase(image *figura1, image *figura2, const char *frase, int x, int y, int alturaLetra, int espacamentoEntreLetras, int *largurasLetras)
+image *carimbarFrase(image *figura1, image *figura2, const char *frase, int x, int y, int espacamento_horizontal, int espacamento_vertical)
 {
-    int i, j;
-    char *indexes = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
-    int len = strlen(frase);
-    int imagemLargura = figura2->largura;
-    int imagemAltura = figura2->altura;
+	int i, j;
+	char *indexes = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
+	int len = strlen(frase);
+	int img_largura = figura2->largura;
+	int img_altura = figura2->altura;
 
-    for (i = 0; i < len; i++)
-    {
-        char caractereFrase = frase[i];
+	for (i = 0; i < len; i++)
+	{
+		char caractere_frase = frase[i];
 
-        // Verifique se atingiu a borda direita da imagem
-        if (x + largurasLetras[j] > imagemLargura)
-        {
-            x = 0;              // Volte para a coluna 0
-            y += alturaLetra;   // Mova para a próxima linha
-            x += espacamentoEntreLetras; // Adicione o espaçamento entre letras
-        }
+		// Verifique se atingiu a borda direita da imagem
+		if (x + espacamento_horizontal > 780)
+		{
+			x = 0;			  // Volte para a coluna 0
+			y += espacamento_vertical; // Mova para a próxima linha
+		}
 
-        if (y + alturaLetra > imagemAltura)
-        {
-            // A imagem está cheia, não podemos escrever mais
-            break;
-        }
+		if (y + espacamento_vertical > img_altura)
+		{
+			// A imagem está cheia, não podemos escrever mais
+			break;
+		}
 
-        if (caractereFrase == ' ')
-        {
-            j = 62; // Índice para espaço em branco
-        }
-        else
-        {
-            for (j = 0; indexes[j] != '\0'; j++)
-            {
-                if (caractereFrase == indexes[j])
-                {
-                    break;
-                }
-            }
-        }
+		if (caractere_frase == ' ')
+		{
+			j = 71; // Índice para espaço em branco
+		}
+		else
+		{
+			for (j = 0; indexes[j] != '\0'; j++)
+			{
+				if (caractere_frase == indexes[j])
+				{
+					break;
+				}
+			}
+		}
 
-        figura2 = carimbo2(figura2, figura1, x, y, j);
+		figura2 = carimbo2(figura2, figura1, x, y, j);
 
-        x += largurasLetras[j] + espacamentoEntreLetras; // Adicione o espaçamento entre letras
-    }
+		x += espacamento_horizontal;
+	}
 
-    return figura2;
+	return figura2;
 }
 
 int main()
 {
-    int i, j;
-    image *figura1;
-    image *figura2;
-    figura1 = load("impactfont.ppm");
-    figura2 = load("whenIdo.ppm");
+	int i, j;
+	image *font;
+	image *meme;
+	font = load("impactfont.ppm");
+	meme = load("whenIdo.ppm");
 
-    int count = 0;
+	//FRASE CARIMBADA NA PARTE DE CIMA DO MEME
+	char *frase_sup_L1 = "Idontalways"; //linha 1 superior
+	char *frase_sup_L2 = "makememes"; //linha 2
 
-    char *frase_superior = "Idonot";
-    char *frase_inferior = "manu";
+	//FRASE CARIMBADA NA PARTE DE BAIXO DO MEME
+	char *frase_inf_L1 = "Butwhen I"; //linha 1 inferior
+	char *frase_inf_L2 = "do,is in C"; //linha 2
 
-    int x = 150;
-    int y_superior = 20;  // Ajuste conforme necessário
-    int y_inferior = 500; // Ajuste conforme necessário
-    int alturaLetra = 0;
-    int espacamentoEntreLetras = 100; // Declare aqui o espaçamento entre letras
+	int x = 7; //quanto menor, mais perto da margem
 
-    // Defina as larguras das letras aqui. Substitua pelos valores corretos.
-    int largurasLetras[63];
-    for (int i = 0; i < 63; i++)
-    {
-        largurasLetras[i] = 10; // Substitua '200' pela largura real de cada letra
-    }
+	//LOCALIZAÇÃO DA FRASE SUPERIOR
+	int y_sup_L1 = 10; //altura no eixo y da linha 1, quando menor mais pra cima
+	int y_sup_L2 = 100;
 
-    // Adiciona o texto superior
-    figura2 = carimbarFrase(figura1, figura2, frase_superior, x, y_superior, alturaLetra, espacamentoEntreLetras, largurasLetras);
+	//LOCALIZACÃO DA FRASE INFERIOR
+	int y_inf_L1 = 400; //quanto maior, mais pra baixo
+	int y_inf_L2 = 500;
 
-    // Adiciona o texto inferior
-    figura2 = carimbarFrase(figura1, figura2, frase_inferior, x, y_inferior, alturaLetra, espacamentoEntreLetras, largurasLetras);
+	int espacamento_horizontal = 45; //o quanto as letras ficam juntas ou separadas
+	int espacamento_vertical = 20; //o quanto se deslocam pra cima
 
-    char nomeOutput[100];
-    save(figura2, "meme.ppm");
+	int espacamento_frase_sup_L2 = 50; //corrigindo bug se usasse com o espacamento das outras
 
-    apaga(figura2);
-    apaga(figura1);
 
-    return 0;
+	//PARTE DE CIMA
+	meme = carimbarFrase(font, meme, frase_sup_L1, x, y_sup_L1, espacamento_horizontal, espacamento_vertical);
+	meme = carimbarFrase(font, meme, frase_sup_L2, x, y_sup_L2, espacamento_frase_sup_L2, espacamento_vertical);
+
+	//PARTE DE BAIXO
+	meme = carimbarFrase(font, meme, frase_inf_L1, x, y_inf_L1, espacamento_horizontal, espacamento_vertical);
+	meme = carimbarFrase(font, meme, frase_inf_L2, x, y_inf_L2, espacamento_horizontal, espacamento_vertical);
+
+	save(meme, "meme.ppm");
+
+	apaga(meme);
+	apaga(font);
+
+	return 0;
 }
