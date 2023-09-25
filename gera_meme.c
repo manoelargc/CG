@@ -209,97 +209,97 @@ image *carimbo2(image *im1, image *im2, int y, int x, int c)
 				}
 			}
 		}
-	}
+	}  
 
 	return im1;
 }
 
-image *carimbarFrase(image *figura1, image *figura2, const char *frase, int x, int y, int larguraLetra, int alturaLetra)
+image *carimbarFrase(image *figura1, image *figura2, const char *frase, int x, int y, int alturaLetra, int espacamentoEntreLetras, int *largurasLetras)
 {
-	int i, j;
-	char *indexes = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
-	int len = strlen(frase);
-	int imagemLargura = figura2->largura;
-	int imagemAltura = figura2->altura;
+    int i, j;
+    char *indexes = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
+    int len = strlen(frase);
+    int imagemLargura = figura2->largura;
+    int imagemAltura = figura2->altura;
 
-	for (i = 0; i < len; i++)
-	{
-		char caractereFrase = frase[i];
+    for (i = 0; i < len; i++)
+    {
+        char caractereFrase = frase[i];
 
-		// Verifique se atingiu a borda direita da imagem
-		if (x + larguraLetra > 780)
-		{
-			x = 0;			  // Volte para a coluna 0
-			y += alturaLetra; // Mova para a próxima linha
-		}
+        // Verifique se atingiu a borda direita da imagem
+        if (x + largurasLetras[j] > imagemLargura)
+        {
+            x = 0;              // Volte para a coluna 0
+            y += alturaLetra;   // Mova para a próxima linha
+            x += espacamentoEntreLetras; // Adicione o espaçamento entre letras
+        }
 
-		if (y + alturaLetra > imagemAltura)
-		{
-			// A imagem está cheia, não podemos escrever mais
-			break;
-		}
+        if (y + alturaLetra > imagemAltura)
+        {
+            // A imagem está cheia, não podemos escrever mais
+            break;
+        }
 
-		if (caractereFrase == ' ')
-		{
-			j = 62; // Índice para espaço em branco
-		}
-		else
-		{
-			for (j = 0; indexes[j] != '\0'; j++)
-			{
-				if (caractereFrase == indexes[j])
-				{
-					break;
-				}
-			}
-		}
+        if (caractereFrase == ' ')
+        {
+            j = 62; // Índice para espaço em branco
+        }
+        else
+        {
+            for (j = 0; indexes[j] != '\0'; j++)
+            {
+                if (caractereFrase == indexes[j])
+                {
+                    break;
+                }
+            }
+        }
 
-		figura2 = carimbo2(figura2, figura1, x, y, j);
+        figura2 = carimbo2(figura2, figura1, x, y, j);
 
-		x += larguraLetra;
-	}
+        x += largurasLetras[j] + espacamentoEntreLetras; // Adicione o espaçamento entre letras
+    }
 
-	return figura2;
+    return figura2;
 }
 
 int main()
 {
+    int i, j;
+    image *figura1;
+    image *figura2;
+    figura1 = load("impactfont.ppm");
+    figura2 = load("whenIdo.ppm");
 
-	int i, j;
-	image *figura1;
-	image *figura2;
-	figura1 = load("impactfont.ppm");
-	//figura1 = negativo(figura1);
-	//save(figura1, "impactfont_negativo.ppm");
-	figura2 = load("whenIdo.ppm");
+    int count = 0;
 
-	int count = 0;
+    char *frase_superior = "Idonot";
+    char *frase_inferior = "manu";
 
-	char *frase_superior = "oi";
-	char *frase_inferior = "ta";
+    int x = 150;
+    int y_superior = 20;  // Ajuste conforme necessário
+    int y_inferior = 500; // Ajuste conforme necessário
+    int alturaLetra = 0;
+    int espacamentoEntreLetras = 100; // Declare aqui o espaçamento entre letras
 
-	int x = 20;
-	int y_superior = 20;  // Ajuste conforme necessário
-	int y_inferior = 500; // Ajuste conforme necessário
-	int larguraLetra = 40;
-	int alturaLetra = 80;
+    // Defina as larguras das letras aqui. Substitua pelos valores corretos.
+    int largurasLetras[63];
+    for (int i = 0; i < 63; i++)
+    {
+        largurasLetras[i] = 10; // Substitua '200' pela largura real de cada letra
+    }
 
-	// Adiciona o texto superior
-	figura2 = carimbarFrase(figura1, figura2, frase_superior, x, y_superior, larguraLetra, alturaLetra);
+    // Adiciona o texto superior
+    figura2 = carimbarFrase(figura1, figura2, frase_superior, x, y_superior, alturaLetra, espacamentoEntreLetras, largurasLetras);
 
-	// Adiciona o texto inferior
-	figura2 = carimbarFrase(figura1, figura2, frase_inferior, x, y_inferior, larguraLetra, alturaLetra);
+    // Adiciona o texto inferior
+    figura2 = carimbarFrase(figura1, figura2, frase_inferior, x, y_inferior, alturaLetra, espacamentoEntreLetras, largurasLetras);
 
-	// image *watermark = load("watermark.ppm");
-	// figura2 = carimbarWatermark(figura2, watermark, 10, 10);
+    char nomeOutput[100];
+    save(figura2, "meme.ppm");
 
-	char nomeOutput[100];
-	// snprintf(nomeOutput, sizeof(nomeOutput), "output%d.ppm");
-	save(figura2, "meme.ppm");
+    apaga(figura2);
+    apaga(figura1);
 
-	apaga(figura2);
-	apaga(figura1);
-	// apaga(watermark);
-
-	return 0;
+    return 0;
 }
