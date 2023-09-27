@@ -1,0 +1,10 @@
+crf.ppm
+cristo.ppm
+gabi.ppm
+manto.ppm
+maraca.ppm
+mosaico.ppm
+rei.ppm
+remo.ppm
+torcida.ppm
+urubu.ppm
